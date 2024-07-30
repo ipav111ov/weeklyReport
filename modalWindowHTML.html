@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- Use xlsx.full.min.js from version 0.20.1 -->
+<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>File(s) size</title>
+</head>
+
+<body>
+  <form name="uploadForm">
+    <div>
+      <label id="Hint1">Тестовый feedback:</label>
+      <input id="uploadInputTest" type="file" accept=".xlsx, .xls" />
+    </div>
+    <div>
+      <label id="Hint2">Живой feedback:</label>
+      <input id="uploadInputLive" type="file" accept=".xlsx, .xls" />
+    </div>
+    <div>
+      <button id="importButton">Импорт</button>
+    </div>
+    <script>
+      let fileT = null;
+      let fileL = null;
+
+      function handleFileUploadTest(file) {
+        let readerT = new FileReader();
+        readerT.onloadend = function(event) {
+          let arrayBuffer = readerT.result;
+          let options = { type: 'array' };
+          let workbook = XLSX.read(arrayBuffer, options);
+          let sheetName = workbook.SheetNames[0];
+          let sheet = workbook.Sheets[sheetName];
+          let aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+          console.log("Test Data:");
+          console.log(aoa);
+          google.script.run.processDataTest(aoa);
+        }
+        readerT.readAsArrayBuffer(file);
+      }
+
+      function handleFileUploadLive(file) {
+        let readerL = new FileReader();
+        readerL.onloadend = function(event) {
+          let arrayBuffer = readerL.result;
+          let options = { type: 'array' };
+          let workbook = XLSX.read(arrayBuffer, options);
+          let sheetName = workbook.SheetNames[0];
+          let sheet = workbook.Sheets[sheetName];
+          let aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+          console.log("Live Data:");
+          console.log(aoa);
+          google.script.run.processDataLive(aoa);
+        }
+        readerL.readAsArrayBuffer(file);
+      }
+
+      document.getElementById("uploadInputTest").addEventListener(
+        "change",
+        function(event) {
+          fileT = event.target.files[0];
+          uploadInputTest.disabled = true;
+        },
+        false
+      );
+
+      document.getElementById("uploadInputLive").addEventListener(
+        "change",
+        function(event) {
+          fileL = event.target.files[0];
+          uploadInputLive.disabled = true;
+        },
+        false
+      );
+
+      document.getElementById("importButton").addEventListener(
+        "click",
+        function() {
+          if (fileT && fileL) {
+            handleFileUploadTest(fileT);
+            handleFileUploadLive(fileL);
+          } 
+          else {
+            if(fileT){
+              alert("Был выбран только один файл");
+              handleFileUploadTest(fileT);
+            }
+            else if (fileL){
+              alert("Был выбран только один файл");
+              handleFileUploadLive(fileL);
+            }
+            else{
+              alert("Выберите файлы для загрузки");
+            }
+          }
+        },
+        false
+      );
+    </script>
+  </form>
+</body>
+
+</html>
